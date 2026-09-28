@@ -1,8 +1,11 @@
 #include "WhatsAppShare.h"
+#if defined(Q_OS_MACOS)
 #include "MacNativeShare.h"
+#endif
 
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
 #include <QUrl>
 #include <QDesktopServices>
 #include <QRegularExpression>
@@ -68,12 +71,10 @@ bool WhatsAppShare::sharePdf(const QString &filePath, const QString &customMessa
         return false;
     }
 
-    // Extract digits for phone validation & clipboard
     QString cleanPhone = phoneNumber;
     cleanPhone.remove(QRegularExpression("[^0-9]"));
 
     if (!cleanPhone.isEmpty()) {
-        // Automatically copy phone number to clipboard on share tap
         copyToClipboard(cleanPhone);
     }
 
@@ -116,7 +117,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
             javaUriString.object<jstring>()
         );
     } else {
-        // 1. Create java.io.File object
         QJniObject javaFilePath = QJniObject::fromString(filePath);
         QJniObject file("java/io/File", "(Ljava/lang/String;)V", javaFilePath.object<jstring>());
         if (!file.isValid()) {
@@ -124,12 +124,10 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
             return false;
         }
 
-        // 2. Get Package Name and FileProvider authority
         QJniObject packageName = context.callObjectMethod("getPackageName", "()Ljava/lang/String;");
         QString authority = packageName.toString() + ".fileprovider";
         QJniObject javaAuthority = QJniObject::fromString(authority);
 
-        // 3. Get Content URI via androidx.core.content.FileProvider
         uri = QJniObject::callStaticObjectMethod(
             "androidx/core/content/FileProvider",
             "getUriForFile",
@@ -145,7 +143,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
         return false;
     }
 
-    // 4. Create ACTION_SEND Intent
     QJniObject actionSend = QJniObject::getStaticObjectField(
         "android/content/Intent",
         "ACTION_SEND",
@@ -154,11 +151,9 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
 
     QJniObject intent("android/content/Intent", "(Ljava/lang/String;)V", actionSend.object<jstring>());
 
-    // 5. Set MIME Type to application/pdf
     QJniObject mimeType = QJniObject::fromString("application/pdf");
     intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;", mimeType.object<jstring>());
 
-    // 6. Attach Stream URI
     QJniObject extraStream = QJniObject::getStaticObjectField(
         "android/content/Intent",
         "EXTRA_STREAM",
@@ -171,7 +166,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
         uri.object<jobject>()
     );
 
-    // 7. Attach optional text message
     if (!customMessage.isEmpty()) {
         QJniObject extraText = QJniObject::getStaticObjectField(
             "android/content/Intent",
@@ -187,7 +181,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
         );
     }
 
-    // 8. Set ClipData for URI permission grant (Required for Android 7.0+)
     QJniObject clipData = QJniObject::callStaticObjectMethod(
         "android/content/ClipData",
         "newRawUri",
@@ -203,7 +196,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
         );
     }
 
-    // 9. Grant Read URI Permission & New Task flags
     jint flagGrantRead = QJniObject::getStaticField<jint>(
         "android/content/Intent",
         "FLAG_GRANT_READ_URI_PERMISSION"
@@ -214,7 +206,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
     );
     intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", flagGrantRead | flagNewTask);
 
-    // 10. Check if WhatsApp or WhatsApp Business is installed
     QJniObject packageManager = context.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
     
     QJniObject whatsAppPkg = QJniObject::fromString("com.whatsapp");
@@ -228,7 +219,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
     );
 
     if (!resolveInfo.isValid()) {
-        // Try WhatsApp Business
         QJniObject w4bPkg = QJniObject::fromString("com.whatsapp.w4b");
         intent.callObjectMethod("setPackage", "(Ljava/lang/String;)Landroid/content/Intent;", w4bPkg.object<jstring>());
         resolveInfo = packageManager.callObjectMethod(
@@ -242,7 +232,6 @@ bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &custo
     if (resolveInfo.isValid()) {
         context.callMethod<void>("startActivity", "(Landroid/content/Intent;)V", intent.object<jobject>());
     } else {
-        // Fallback: Clear package to let user choose any available sharing app (e.g., Drive, Gmail, Bluetooth)
         QJniObject nullString;
         intent.callObjectMethod("setPackage", "(Ljava/lang/String;)Landroid/content/Intent;", nullString.object<jstring>());
 
@@ -267,7 +256,6 @@ bool WhatsAppShare::shareOnDesktop(const QString &filePath, const QString &custo
     qDebug() << "Sharing on desktop platform. Opening PDF file:" << filePath;
     QUrl fileUrl = QUrl::fromLocalFile(filePath);
 
-    // 1. Copy PDF file object to clipboard
     QClipboard *clipboard = QGuiApplication::clipboard();
     if (clipboard) {
         QMimeData *mimeData = new QMimeData();
@@ -283,8 +271,16 @@ bool WhatsAppShare::shareOnDesktop(const QString &filePath, const QString &custo
     MacNativeShare::copyFileToClipboard(filePath);
     return MacNativeShare::attachAndSendWhatsApp(filePath, cleanPhone, customMessage);
 #else
-    QString nativeUrl = QString("whatsapp://send?phone=%1").arg(cleanPhone);
-    return QDesktopServices::openUrl(QUrl(nativeUrl));
+    QString urlStr;
+    if (!cleanPhone.isEmpty()) {
+        urlStr = QString("https://api.whatsapp.com/send?phone=%1").arg(cleanPhone);
+        if (!customMessage.isEmpty()) {
+            urlStr += QString("&text=%1").arg(QString::fromUtf8(QUrl::toPercentEncoding(customMessage)));
+        }
+    } else {
+        urlStr = "https://web.whatsapp.com";
+    }
+    return QDesktopServices::openUrl(QUrl(urlStr));
 #endif
 }
 
@@ -310,18 +306,15 @@ void WhatsAppShare::startFileDrag(const QString &filePath)
     mimeData->setText(cleanPath);
     drag->setMimeData(mimeData);
 
-    // Create a drag thumbnail pixmap
     QPixmap pixmap(160, 48);
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    // Draw rounded background
     painter.setBrush(QColor("#075E54"));
     painter.setPen(QPen(QColor("#25D366"), 2));
     painter.drawRoundedRect(1, 1, 158, 46, 10, 10);
 
-    // Draw icon and text
     painter.setPen(Qt::white);
     QFont font = painter.font();
     font.setBold(true);
@@ -353,7 +346,7 @@ bool WhatsAppShare::revealInFinder(const QString &filePath)
 #elif defined(Q_OS_WIN)
     return QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(cleanPath));
 #else
-    return QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(cleanPath).absolutePath()));
+    QFileInfo fileInfo(cleanPath);
+    return QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absolutePath()));
 #endif
 }
-

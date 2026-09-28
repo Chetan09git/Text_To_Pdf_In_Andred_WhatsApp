@@ -33,7 +33,6 @@ QString PdfGenerator::getOutputDirectory() const
     QString outputDir;
 
 #if defined(Q_OS_ANDROID)
-    // On Android, use AppDataLocation or CacheLocation which have guaranteed write permissions without legacy storage issues
     outputDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (outputDir.isEmpty() || !QDir(outputDir).exists()) {
         outputDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
@@ -62,7 +61,6 @@ QString PdfGenerator::getOutputDirectory() const
 
     return outputDir;
 }
-
 
 QString PdfGenerator::buildHtmlContent(const QString &name,
                                        const QString &phone,
@@ -127,7 +125,6 @@ QString PdfGenerator::generatePdf(const QString &name,
     m_isGenerating = true;
     emit isGeneratingChanged();
 
-    // Validate inputs
     if (name.trimmed().isEmpty()) {
         m_isGenerating = false;
         emit isGeneratingChanged();
