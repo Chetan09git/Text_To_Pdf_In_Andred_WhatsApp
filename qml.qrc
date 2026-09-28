@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Main.qml</file>
+        <file>components/CustomTextField.qml</file>
+        <file>components/PhoneNumberField.qml</file>
+        <file>components/CustomButton.qml</file>
+        <file>components/DetailsForm.qml</file>
+        <file>components/StatusMessage.qml</file>
+        <file>pages/DetailsPage.qml</file>
+    </qresource>
+</RCC>
