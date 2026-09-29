@@ -18,7 +18,6 @@ public:
 
     Q_INVOKABLE QString generatePdf(const QString &name,
                                     const QString &phone,
-                                    const QString &email,
                                     const QString &address,
                                     const QString &additionalDetails);
 
@@ -35,7 +34,6 @@ private:
     QString getOutputDirectory() const;
     QString buildHtmlContent(const QString &name,
                              const QString &phone,
-                             const QString &email,
                              const QString &address,
                              const QString &additionalDetails) const;
 };

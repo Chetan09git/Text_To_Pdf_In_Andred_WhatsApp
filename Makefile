@@ -284,6 +284,7 @@ DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/qt_config.prf \
 		../../Qt/6.11.0/macos/mkspecs/macx-clang/qmake.conf \
 		../../Qt/6.11.0/macos/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../Qt/6.11.0/macos/mkspecs/features/exclusive_builds.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/mac/sdk.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/toolchain.prf \
@@ -325,7 +326,7 @@ TARGET        = TextToPDFWhatsApp.app/Contents/MacOS/TextToPDFWhatsApp
 EXPORT_QMAKE_MAC_SDK = macosx
 EXPORT_QMAKE_MAC_SDK_VERSION = 26.5
 EXPORT_QMAKE_XCODE_DEVELOPER_PATH = /Applications/Xcode.app/Contents/Developer
-EXPORT__QMAKE_STASH_ = 
+EXPORT__QMAKE_STASH_ = /Users/admin/Pthinks/TextToPDFWhatsAppAndroid/.qmake.stash
 EXPORT_VALID_ARCHS = x86_64 arm64
 EXPORT_DEFAULT_ARCHS = x86_64
 EXPORT_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(if $(ARCHS), $(ARCHS), $(if $(EXPORT_DEFAULT_ARCHS), $(EXPORT_DEFAULT_ARCHS), $(EXPORT_VALID_ARCHS))))
@@ -560,6 +561,7 @@ Makefile: TextToPDFWhatsApp.pro ../../Qt/6.11.0/macos/mkspecs/macx-clang/qmake.c
 		../../Qt/6.11.0/macos/mkspecs/features/qt_config.prf \
 		../../Qt/6.11.0/macos/mkspecs/macx-clang/qmake.conf \
 		../../Qt/6.11.0/macos/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../Qt/6.11.0/macos/mkspecs/features/exclusive_builds.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/mac/sdk.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/toolchain.prf \
@@ -816,6 +818,7 @@ Makefile: TextToPDFWhatsApp.pro ../../Qt/6.11.0/macos/mkspecs/macx-clang/qmake.c
 ../../Qt/6.11.0/macos/mkspecs/features/qt_config.prf:
 ../../Qt/6.11.0/macos/mkspecs/macx-clang/qmake.conf:
 ../../Qt/6.11.0/macos/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../Qt/6.11.0/macos/mkspecs/features/exclusive_builds.prf:
 ../../Qt/6.11.0/macos/mkspecs/features/mac/sdk.prf:
 ../../Qt/6.11.0/macos/mkspecs/features/toolchain.prf:
@@ -888,6 +891,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r TextToPDFWhatsApp.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -979,6 +983,7 @@ WhatsAppShare.o: services/WhatsAppShare.cpp services/WhatsAppShare.h \
 		services/MacNativeShare.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QFile \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QFileInfo \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDir \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QUrl \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QDesktopServices \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
@@ -1017,21 +1022,9 @@ moc_WhatsAppShare.o: moc_WhatsAppShare.cpp
 
 ####### Install
 
-install_target: first FORCE
-	@test -d $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin || mkdir -p $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin
-	$(DEL_FILE) -r $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin/TextToPDFWhatsApp.app
-	
-	$(QINSTALL) TextToPDFWhatsApp.app $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin/TextToPDFWhatsApp.app
-	-$(STRIP) $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin/TextToPDFWhatsApp.app/Contents/MacOS/$(QMAKE_TARGET)
+install:  FORCE
 
-uninstall_target: FORCE
-	-$(DEL_FILE) -r $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin/TextToPDFWhatsApp.app
-	-$(DEL_DIR) $(INSTALL_ROOT)/opt/TextToPDFWhatsApp/bin/ 
-
-
-install: install_target  FORCE
-
-uninstall: uninstall_target  FORCE
+uninstall:  FORCE
 
 FORCE:
 

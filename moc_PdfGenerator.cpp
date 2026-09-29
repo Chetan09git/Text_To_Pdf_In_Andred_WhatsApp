@@ -49,7 +49,6 @@ template <> constexpr inline auto PdfGenerator::qt_create_metaobjectdata<qt_meta
         "generatePdf",
         "name",
         "phone",
-        "email",
         "address",
         "additionalDetails",
         "isGenerating",
@@ -70,16 +69,15 @@ template <> constexpr inline auto PdfGenerator::qt_create_metaobjectdata<qt_meta
             { QMetaType::QString, 7 },
         }}),
         // Method 'generatePdf'
-        QtMocHelpers::MethodData<QString(const QString &, const QString &, const QString &, const QString &, const QString &)>(8, 2, QMC::AccessPublic, QMetaType::QString, {{
+        QtMocHelpers::MethodData<QString(const QString &, const QString &, const QString &, const QString &)>(8, 2, QMC::AccessPublic, QMetaType::QString, {{
             { QMetaType::QString, 9 }, { QMetaType::QString, 10 }, { QMetaType::QString, 11 }, { QMetaType::QString, 12 },
-            { QMetaType::QString, 13 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
         // property 'isGenerating'
-        QtMocHelpers::PropertyData<bool>(14, QMetaType::Bool, QMC::DefaultPropertyFlags, 0),
+        QtMocHelpers::PropertyData<bool>(13, QMetaType::Bool, QMC::DefaultPropertyFlags, 0),
         // property 'lastGeneratedFilePath'
-        QtMocHelpers::PropertyData<QString>(15, QMetaType::QString, QMC::DefaultPropertyFlags, 1),
+        QtMocHelpers::PropertyData<QString>(14, QMetaType::QString, QMC::DefaultPropertyFlags, 1),
     };
     QtMocHelpers::UintData qt_enums {
     };
@@ -105,7 +103,7 @@ void PdfGenerator::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 1: _t->lastGeneratedFilePathChanged(); break;
         case 2: _t->pdfGenerated((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
         case 3: _t->generationFailed((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 4: { QString _r = _t->generatePdf((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[5])));
+        case 4: { QString _r = _t->generatePdf((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[4])));
             if (_a[0]) *reinterpret_cast<QString*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }

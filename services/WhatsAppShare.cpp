@@ -93,6 +93,87 @@ bool WhatsAppShare::sharePdf(const QString &filePath, const QString &customMessa
     return result;
 }
 
+bool WhatsAppShare::sendTextMessage(const QString &phoneNumber, const QString &message)
+{
+    m_isSharing = true;
+    emit isSharingChanged();
+
+    QString cleanPhone = phoneNumber;
+    cleanPhone.remove(QRegularExpression("[^0-9]"));
+
+    if (cleanPhone.isEmpty()) {
+        m_isSharing = false;
+        emit isSharingChanged();
+        emit shareError("Please enter a valid phone number.");
+        return false;
+    }
+
+    copyToClipboard(cleanPhone);
+
+#if defined(Q_OS_ANDROID)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QJniObject context = QNativeInterface::QAndroidApplication::context();
+#else
+    QJniObject context = QtAndroid::androidContext();
+#endif
+    if (!context.isValid()) {
+        m_isSharing = false;
+        emit isSharingChanged();
+        emit shareError("Android application context is not valid.");
+        return false;
+    }
+
+    QString urlString = QString("https://api.whatsapp.com/send?phone=%1&text=%2")
+        .arg(cleanPhone, QString::fromUtf8(QUrl::toPercentEncoding(message)));
+    QJniObject javaUriString = QJniObject::fromString(urlString);
+    QJniObject uri = QJniObject::callStaticObjectMethod(
+        "android/net/Uri",
+        "parse",
+        "(Ljava/lang/String;)Landroid/net/Uri;",
+        javaUriString.object<jstring>()
+    );
+
+    QJniObject actionView = QJniObject::getStaticObjectField(
+        "android/content/Intent",
+        "ACTION_VIEW",
+        "Ljava/lang/String;"
+    );
+    QJniObject intent("android/content/Intent", "(Ljava/lang/String;Landroid/net/Uri;)V", actionView.object<jstring>(), uri.object<jobject>());
+    QJniObject whatsAppPkg = QJniObject::fromString("com.whatsapp");
+    intent.callObjectMethod("setPackage", "(Ljava/lang/String;)Landroid/content/Intent;", whatsAppPkg.object<jstring>());
+    
+    jint flagNewTask = QJniObject::getStaticField<jint>(
+        "android/content/Intent",
+        "FLAG_ACTIVITY_NEW_TASK"
+    );
+    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", flagNewTask);
+
+    context.callMethod<void>("startActivity", "(Landroid/content/Intent;)V", intent.object<jobject>());
+    m_isSharing = false;
+    emit isSharingChanged();
+    emit shareSuccess();
+    return true;
+#else
+    QString encodedMsg = QString::fromUtf8(QUrl::toPercentEncoding(message));
+    QUrl appUrl(QString("whatsapp://send?phone=%1&text=%2").arg(cleanPhone, encodedMsg));
+    
+    bool opened = QDesktopServices::openUrl(appUrl);
+    if (!opened) {
+        QUrl webUrl(QString("https://web.whatsapp.com/send?phone=%1&text=%2").arg(cleanPhone, encodedMsg));
+        opened = QDesktopServices::openUrl(webUrl);
+    }
+
+    m_isSharing = false;
+    emit isSharingChanged();
+    if (opened) {
+        emit shareSuccess();
+    } else {
+        emit shareError("Unable to open WhatsApp.");
+    }
+    return opened;
+#endif
+}
+
 #if defined(Q_OS_ANDROID)
 bool WhatsAppShare::shareOnAndroid(const QString &filePath, const QString &customMessage, const QString &phoneNumber)
 {

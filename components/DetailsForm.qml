@@ -7,7 +7,6 @@ ColumnLayout {
 
     property alias name: nameField.text
     property alias phoneNumber: phoneField.fullPhoneNumber
-    property alias email: emailField.text
     property alias address: addressField.text
     property alias additionalDetails: detailsField.text
 
@@ -46,18 +45,6 @@ ColumnLayout {
             phoneField.errorMessage = "";
         }
 
-        // Validate Email
-        var emailStr = emailField.text.trim();
-        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailStr.length > 0 && !emailRegex.test(emailStr)) {
-            emailField.hasError = true;
-            emailField.errorMessage = "Please enter a valid email address (e.g. name@domain.com).";
-            isValid = false;
-        } else {
-            emailField.hasError = false;
-            emailField.errorMessage = "";
-        }
-
         return isValid;
     }
 
@@ -69,10 +56,6 @@ ColumnLayout {
         phoneField.number = "";
         phoneField.hasError = false;
         phoneField.errorMessage = "";
-
-        emailField.text = "";
-        emailField.hasError = false;
-        emailField.errorMessage = "";
 
         addressField.text = "";
         addressField.hasError = false;
@@ -114,24 +97,7 @@ ColumnLayout {
         }
     }
 
-    // 3. Email Field
-    CustomTextField {
-        id: emailField
-        label: "Email Address"
-        placeholderText: "example@gmail.com"
-        iconText: "✉"
-        required: false
-        inputMethodHints: Qt.ImhEmailCharactersOnly
-        maximumLength: 100
-        onTextChangedByUser: {
-            if (hasError) {
-                hasError = false;
-                errorMessage = "";
-            }
-        }
-    }
-
-    // 4. Address Field
+    // 3. Address Field
     CustomTextField {
         id: addressField
         label: "Address"

@@ -15,6 +15,7 @@ public:
     bool isSharing() const;
 
     Q_INVOKABLE bool sharePdf(const QString &filePath, const QString &customMessage = "", const QString &phoneNumber = "");
+    Q_INVOKABLE bool sendTextMessage(const QString &phoneNumber, const QString &message);
     Q_INVOKABLE void copyToClipboard(const QString &text);
     Q_INVOKABLE void startFileDrag(const QString &filePath);
     Q_INVOKABLE bool revealInFinder(const QString &filePath);

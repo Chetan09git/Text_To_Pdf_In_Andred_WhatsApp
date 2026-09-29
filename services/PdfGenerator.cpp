@@ -64,7 +64,6 @@ QString PdfGenerator::getOutputDirectory() const
 
 QString PdfGenerator::buildHtmlContent(const QString &name,
                                        const QString &phone,
-                                       const QString &email,
                                        const QString &address,
                                        const QString &additionalDetails) const
 {
@@ -94,7 +93,6 @@ QString PdfGenerator::buildHtmlContent(const QString &name,
     html += "<table class='info-table'>";
     html += "  <tr><td class='label'>Full Name:</td><td class='value'>" + (name.isEmpty() ? "N/A" : name.toHtmlEscaped()) + "</td></tr>";
     html += "  <tr><td class='label'>Phone Number:</td><td class='value'>" + (phone.isEmpty() ? "N/A" : phone.toHtmlEscaped()) + "</td></tr>";
-    html += "  <tr><td class='label'>Email Address:</td><td class='value'>" + (email.isEmpty() ? "N/A" : email.toHtmlEscaped()) + "</td></tr>";
     html += "  <tr><td class='label'>Address:</td><td class='value'>" + (address.isEmpty() ? "N/A" : address.toHtmlEscaped().replace("\n", "<br/>")) + "</td></tr>";
     html += "</table>";
 
@@ -118,7 +116,6 @@ QString PdfGenerator::buildHtmlContent(const QString &name,
 
 QString PdfGenerator::generatePdf(const QString &name,
                                   const QString &phone,
-                                  const QString &email,
                                   const QString &address,
                                   const QString &additionalDetails)
 {
@@ -158,7 +155,7 @@ QString PdfGenerator::generatePdf(const QString &name,
     pdfWriter.setPageLayout(layout);
 
     QTextDocument document;
-    document.setHtml(buildHtmlContent(name, phone, email, address, additionalDetails));
+    document.setHtml(buildHtmlContent(name, phone, address, additionalDetails));
     document.setPageSize(QSizeF(pdfWriter.width(), pdfWriter.height()));
 
     QPainter painter;

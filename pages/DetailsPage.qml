@@ -8,6 +8,8 @@ Item {
 
     property string currentPdfPath: ""
     property bool isPdfReady: currentPdfPath.length > 0
+    property bool isAndroid: Qt.platform.os === "android"
+    property bool pendingShareOnGenerate: false
 
     Connections {
         target: pdfGenerator
@@ -16,8 +18,15 @@ Item {
             statusBanner.type = "success";
             statusBanner.message = "PDF generated successfully!\n" + filePath.split("/").pop();
             statusBanner.autoDismiss = false;
+
+            if (root.pendingShareOnGenerate) {
+                root.pendingShareOnGenerate = false;
+                var msg = root.buildInformationMessage();
+                whatsAppShare.sharePdf(filePath, msg, detailsForm.phoneNumber);
+            }
         }
         function onGenerationFailed(errorMessage) {
+            root.pendingShareOnGenerate = false;
             statusBanner.type = "error";
             statusBanner.message = "Error generating PDF: " + errorMessage;
             statusBanner.autoDismiss = false;
@@ -29,15 +38,31 @@ Item {
         function onShareSuccess() {
             var phone = detailsForm.phoneNumber;
             statusBanner.type = "success";
-            statusBanner.message = "🚀 WhatsApp chat opened for " + phone + "!\nPDF document is being automatically attached and sent.";
+            if (root.isAndroid) {
+                statusBanner.message = "🚀 WhatsApp opened! Sharing PDF with " + phone;
+            } else {
+                statusBanner.message = "🚀 WhatsApp opened! Message sent to " + phone;
+            }
             statusBanner.autoDismiss = false;
         }
         function onShareError(errorMessage) {
-            var phone = detailsForm.phoneNumber;
             statusBanner.type = "error";
             statusBanner.message = "WhatsApp notice: " + errorMessage;
             statusBanner.autoDismiss = false;
         }
+    }
+
+    function buildInformationMessage() {
+        var msg = "📋 *Personal Details*\n\n";
+        msg += "👤 *Name:* " + detailsForm.name + "\n";
+        msg += "📞 *Phone:* " + detailsForm.phoneNumber + "\n";
+        if (detailsForm.address.trim().length > 0) {
+            msg += "📍 *Address:* " + detailsForm.address.trim() + "\n";
+        }
+        if (detailsForm.additionalDetails.trim().length > 0) {
+            msg += "📝 *Additional Details:* " + detailsForm.additionalDetails.trim() + "\n";
+        }
+        return msg;
     }
 
     ScrollView {
@@ -145,7 +170,6 @@ Item {
                                 pdfGenerator.generatePdf(
                                     detailsForm.name,
                                     detailsForm.phoneNumber,
-                                    detailsForm.email,
                                     detailsForm.address,
                                     detailsForm.additionalDetails
                                 );
@@ -156,19 +180,41 @@ Item {
                         }
                     }
 
-                    // 2. Share via WhatsApp Button
+                    // 2. Unified WhatsApp Button (Sends PDF on Android, Sends Message on Desktop)
                     CustomButton {
                         id: shareBtn
-                        text: "Share via WhatsApp"
-                        iconText: "💬"
+                        text: root.isAndroid ? "Share PDF via WhatsApp" : "Share via WhatsApp"
+                        iconText: root.isAndroid ? "📄💬" : "💬"
                         variant: "whatsapp"
-                        enabled: root.isPdfReady && !pdfGenerator.isGenerating && !whatsAppShare.isSharing
-                        loading: whatsAppShare.isSharing
+                        enabled: !pdfGenerator.isGenerating && !whatsAppShare.isSharing
+                        loading: whatsAppShare.isSharing || (root.pendingShareOnGenerate && pdfGenerator.isGenerating)
 
                         onClicked: {
-                            if (root.currentPdfPath.length > 0) {
-                                var msg = "Here is the personal details PDF for " + detailsForm.name;
-                                whatsAppShare.sharePdf(root.currentPdfPath, msg, detailsForm.phoneNumber);
+                            statusBanner.message = "";
+                            if (!detailsForm.validateForm()) {
+                                statusBanner.type = "error";
+                                statusBanner.message = "Please correct the highlighted fields above.";
+                                return;
+                            }
+
+                            var msg = root.buildInformationMessage();
+
+                            if (root.isAndroid) {
+                                // On Android: Send PDF (auto-generate first if needed)
+                                if (root.isPdfReady) {
+                                    whatsAppShare.sharePdf(root.currentPdfPath, msg, detailsForm.phoneNumber);
+                                } else {
+                                    root.pendingShareOnGenerate = true;
+                                    pdfGenerator.generatePdf(
+                                        detailsForm.name,
+                                        detailsForm.phoneNumber,
+                                        detailsForm.address,
+                                        detailsForm.additionalDetails
+                                    );
+                                }
+                            } else {
+                                // On Desktop: Send information message directly to WhatsApp contact
+                                whatsAppShare.sendTextMessage(detailsForm.phoneNumber, msg);
                             }
                         }
                     }

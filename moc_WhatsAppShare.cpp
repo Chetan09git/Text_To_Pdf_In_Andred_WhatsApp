@@ -48,6 +48,8 @@ template <> constexpr inline auto WhatsAppShare::qt_create_metaobjectdata<qt_met
         "filePath",
         "customMessage",
         "phoneNumber",
+        "sendTextMessage",
+        "message",
         "copyToClipboard",
         "text",
         "startFileDrag",
@@ -76,22 +78,26 @@ template <> constexpr inline auto WhatsAppShare::qt_create_metaobjectdata<qt_met
         QtMocHelpers::MethodData<bool(const QString &)>(6, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Bool, {{
             { QMetaType::QString, 7 },
         }}),
+        // Method 'sendTextMessage'
+        QtMocHelpers::MethodData<bool(const QString &, const QString &)>(10, 2, QMC::AccessPublic, QMetaType::Bool, {{
+            { QMetaType::QString, 9 }, { QMetaType::QString, 11 },
+        }}),
         // Method 'copyToClipboard'
-        QtMocHelpers::MethodData<void(const QString &)>(10, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 11 },
+        QtMocHelpers::MethodData<void(const QString &)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 13 },
         }}),
         // Method 'startFileDrag'
-        QtMocHelpers::MethodData<void(const QString &)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
+        QtMocHelpers::MethodData<void(const QString &)>(14, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 7 },
         }}),
         // Method 'revealInFinder'
-        QtMocHelpers::MethodData<bool(const QString &)>(13, 2, QMC::AccessPublic, QMetaType::Bool, {{
+        QtMocHelpers::MethodData<bool(const QString &)>(15, 2, QMC::AccessPublic, QMetaType::Bool, {{
             { QMetaType::QString, 7 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
         // property 'isSharing'
-        QtMocHelpers::PropertyData<bool>(14, QMetaType::Bool, QMC::DefaultPropertyFlags, 0),
+        QtMocHelpers::PropertyData<bool>(16, QMetaType::Bool, QMC::DefaultPropertyFlags, 0),
     };
     QtMocHelpers::UintData qt_enums {
     };
@@ -122,9 +128,11 @@ void WhatsAppShare::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
             if (_a[0]) *reinterpret_cast<bool*>(_a[0]) = std::move(_r); }  break;
         case 5: { bool _r = _t->sharePdf((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])));
             if (_a[0]) *reinterpret_cast<bool*>(_a[0]) = std::move(_r); }  break;
-        case 6: _t->copyToClipboard((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 7: _t->startFileDrag((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 8: { bool _r = _t->revealInFinder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])));
+        case 6: { bool _r = _t->sendTextMessage((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[2])));
+            if (_a[0]) *reinterpret_cast<bool*>(_a[0]) = std::move(_r); }  break;
+        case 7: _t->copyToClipboard((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 8: _t->startFileDrag((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 9: { bool _r = _t->revealInFinder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])));
             if (_a[0]) *reinterpret_cast<bool*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
@@ -165,14 +173,14 @@ int WhatsAppShare::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 9)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 10;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 9)
+        if (_id < 10)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 9;
+        _id -= 10;
     }
     if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
             || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty

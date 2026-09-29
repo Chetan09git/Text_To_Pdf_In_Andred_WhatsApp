@@ -61,6 +61,7 @@ bool MacNativeShare::attachAndSendWhatsApp(const QString &filePath, const QStrin
     cleanPhone.remove(QRegularExpression("[^0-9]"));
 
     QString encodedMsg = QString::fromUtf8(QUrl::toPercentEncoding(message));
+    QString textParam = encodedMsg.isEmpty() ? "" : QString("&text=%1").arg(encodedMsg);
     
     // 3. Open WhatsApp, activate, paste PDF, and send
     QString script;
@@ -69,7 +70,7 @@ bool MacNativeShare::attachAndSendWhatsApp(const QString &filePath, const QStrin
             "set the clipboard to (POSIX file \"%1\")\n"
             "tell application \"WhatsApp\" to activate\n"
             "tell application \"System Events\"\n"
-            "   open location \"whatsapp://send?phone=%2\"\n"
+            "   open location \"whatsapp://send?phone=%2%3\"\n"
             "end tell\n"
             "delay 2.5\n"
             "tell application \"WhatsApp\" to activate\n"
@@ -82,7 +83,7 @@ bool MacNativeShare::attachAndSendWhatsApp(const QString &filePath, const QStrin
             "       keystroke return\n"
             "   end tell\n"
             "end tell"
-        ).arg(filePath, cleanPhone);
+        ).arg(filePath, cleanPhone, textParam);
     } else {
         script = QString(
             "set the clipboard to (POSIX file \"%1\")\n"
